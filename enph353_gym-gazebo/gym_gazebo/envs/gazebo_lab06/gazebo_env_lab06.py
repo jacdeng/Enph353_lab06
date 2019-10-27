@@ -44,7 +44,6 @@ class Gazebo_Lab06_Env(gazebo_env.GazeboEnv):
         self.upper_blue = np.array([150, 255, 255])
 
         self.timeout = 0
-        self.scan_height = 750
 
     def process_image(self, data):
         '''
@@ -54,7 +53,7 @@ class Gazebo_Lab06_Env(gazebo_env.GazeboEnv):
             @retval (state, done)
         '''
         try:
-            cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")idth = 8
+            cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             print(e)
 
@@ -80,11 +79,11 @@ class Gazebo_Lab06_Env(gazebo_env.GazeboEnv):
         # have no line detected.
         height, width, channels = cv_image.shape
 
-        frame = Gazebo_Lab06_Env.convert_into_bw(cv_image)
-        center = Gazebo_Lab06_Env.get_centre(frame, width)
+        frame = self.convert_into_bw(cv_image)
+        center = self.get_centre(frame, width, height)
 
         section_width = width/10
-        at_section = center/section_width + 1
+        at_section = center/section_width
 
         state[at_section] = 1
         
@@ -99,18 +98,18 @@ class Gazebo_Lab06_Env(gazebo_env.GazeboEnv):
 
     def convert_into_bw(self, cv_image):
 
-        frame = cv.cvtColor(cv_image, cv.COLOR_BGR2GRAY)
-        ret, frame = cv.threshold(frame, 100, 255, cv.THRESH_BINARY)
+        frame = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+        ret, frame = cv2.threshold(frame, 100, 255, cv2.THRESH_BINARY)
 
         return frame
 
-    def get_centre(self, frame, width):
+    def get_centre(self, frame, width, height):
         left_white = 0
         black_pixels = 0
         black_started = False
 
         for x in range(0,width-1):
-            pixel_val = frame[self.scan_height,x,0]
+            pixel_val = frame[height-20,x]
             if pixel_val == 255 and not black_started:
                 left_white = left_white+1
             elif pixel_val == 255 and black_started:
